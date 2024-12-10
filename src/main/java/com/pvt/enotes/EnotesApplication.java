@@ -10,6 +10,7 @@ public class EnotesApplication {
 
 		SpringApplication.run(EnotesApplication.class, args);
 		System.out.println("Hi springboot");
+
 	}
 
 }
