@@ -3,6 +3,7 @@ package com.pvt.enotes.service.impl;
 import com.pvt.enotes.dto.CategoryDto;
 import com.pvt.enotes.dto.CategoryResponse;
 import com.pvt.enotes.entity.Category;
+import com.pvt.enotes.exception.ResourceNotFoundException;
 import com.pvt.enotes.repository.CategoryRepository;
 import com.pvt.enotes.service.CategoryService;
 
@@ -43,8 +44,6 @@ public class CategoryServiceImpl implements CategoryService {
           }else{
               updateCategory(category);
           }
-
-
 
           Category saveCategory= categoryRepo.save(category);
 
@@ -88,11 +87,11 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public CategoryDto getCategoryById(Integer id) {
-        Optional<Category> findByCategory = categoryRepo.findByIdAndIsDeletedFalse(id);
+    public CategoryDto getCategoryById(Integer id) throws Exception {
+        Category category = categoryRepo.findByIdAndIsDeletedFalse(id).orElseThrow(()->new ResourceNotFoundException("Category Not Found with id="+id));
 
-        if(findByCategory.isPresent()){
-            Category category = findByCategory.get();
+        if(!ObjectUtils.isEmpty(category)){
+            category.getName().toUpperCase();
             return mapper.map(category,CategoryDto.class);
         }
         return null;
