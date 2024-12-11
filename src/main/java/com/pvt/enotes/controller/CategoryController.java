@@ -3,7 +3,9 @@ package com.pvt.enotes.controller;
 import com.pvt.enotes.dto.CategoryDto;
 import com.pvt.enotes.dto.CategoryResponse;
 import com.pvt.enotes.entity.Category;
+import com.pvt.enotes.exception.ResourceNotFoundException;
 import com.pvt.enotes.service.CategoryService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/category")
 
@@ -32,6 +35,7 @@ public class CategoryController {
 
     @GetMapping("/")
     public ResponseEntity<?> getAllCategory(){
+
          List<CategoryDto> allCategory=categoryService.getAllCategory();
 
         if(CollectionUtils.isEmpty(allCategory)){
@@ -53,13 +57,16 @@ public class CategoryController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getCategoryDetailsById(@PathVariable Integer id){
-        CategoryDto categoryDto=categoryService.getCategoryById(id);
-        if(ObjectUtils.isEmpty(categoryDto)){
-            return new ResponseEntity<>("No category found with this id="+id, HttpStatus.NOT_FOUND);
+    public ResponseEntity<?> getCategoryDetailsById(@PathVariable Integer id) throws Exception{
 
-        }
-        return new ResponseEntity<>(categoryDto, HttpStatus.OK);
+            CategoryDto categoryDto=categoryService.getCategoryById(id);
+            if(ObjectUtils.isEmpty(categoryDto)){
+
+                return new ResponseEntity<>("Internal server error", HttpStatus.NOT_FOUND);
+
+            }
+            return new ResponseEntity<>(categoryDto, HttpStatus.OK);
+
     }
 
     @DeleteMapping("/{id}")

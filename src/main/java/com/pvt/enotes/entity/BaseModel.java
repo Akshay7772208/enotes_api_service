@@ -9,10 +9,7 @@ import java.util.Date;
 
 @Getter
 @Setter
-//@AllArgsConstructor
-//@NoArgsConstructor
 
-//@Entity
 @MappedSuperclass
 public class BaseModel {
 

@@ -20,7 +20,7 @@ public interface CategoryService {
     Boolean deleteCategory(Integer id);
 
 
-    CategoryDto getCategoryById(Integer id);
+    CategoryDto getCategoryById(Integer id) throws Exception;
 
 
 }
