@@ -1,5 +1,7 @@
 package com.pvt.enotes.controller;
 
+import com.pvt.enotes.dto.CategoryDto;
+import com.pvt.enotes.dto.CategoryResponse;
 import com.pvt.enotes.entity.Category;
 import com.pvt.enotes.service.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,8 +20,8 @@ public class CategoryController {
     private CategoryService categoryService;
 
     @PostMapping("/save-category")
-    public ResponseEntity<?> saveCategory(@RequestBody Category category){
-       Boolean saveCategory= categoryService.saveCategory(category);
+    public ResponseEntity<?> saveCategory(@RequestBody CategoryDto categoryDto){
+       Boolean saveCategory= categoryService.saveCategory(categoryDto);
 
        if(saveCategory){
            return new ResponseEntity<>("saved success", HttpStatus.CREATED);
@@ -29,7 +31,7 @@ public class CategoryController {
 
     @GetMapping("/category")
     public ResponseEntity<?> getAllCategory(){
-         List<Category> allCategory=categoryService.getAllCategory();
+         List<CategoryDto> allCategory=categoryService.getAllCategory();
 
         if(CollectionUtils.isEmpty(allCategory)){
             return  ResponseEntity.noContent().build();
@@ -37,4 +39,16 @@ public class CategoryController {
         }
         return new ResponseEntity<>(allCategory, HttpStatus.OK);
     }
+
+    @GetMapping("/active-category")
+    public ResponseEntity<?> getActiveCategory(){
+        List<CategoryResponse> activeCategory=categoryService.getActiveCategory();
+
+        if(CollectionUtils.isEmpty(activeCategory)){
+            return  ResponseEntity.noContent().build();
+
+        }
+        return new ResponseEntity<>(activeCategory, HttpStatus.OK);
+    }
+
 }
