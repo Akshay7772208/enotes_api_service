@@ -8,9 +8,19 @@ import java.util.List;
 
 public interface CategoryService {
 
+
     public Boolean saveCategory(CategoryDto categoryDto);
 
     public List<CategoryDto> getAllCategory();
 
     public List<CategoryResponse> getActiveCategory();
+
+
+
+    Boolean deleteCategory(Integer id);
+
+
+    CategoryDto getCategoryById(Integer id);
+
+
 }
