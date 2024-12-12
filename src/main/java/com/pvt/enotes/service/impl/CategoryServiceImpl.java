@@ -3,6 +3,7 @@ package com.pvt.enotes.service.impl;
 import com.pvt.enotes.dto.CategoryDto;
 import com.pvt.enotes.dto.CategoryResponse;
 import com.pvt.enotes.entity.Category;
+import com.pvt.enotes.exception.ExistDataException;
 import com.pvt.enotes.exception.ResourceNotFoundException;
 import com.pvt.enotes.repository.CategoryRepository;
 import com.pvt.enotes.service.CategoryService;
@@ -35,8 +36,14 @@ public class CategoryServiceImpl implements CategoryService {
     public Boolean saveCategory(CategoryDto categoryDto) {
         //validation checking
         validation.categoryValidation(categoryDto);
+        //validation name
 
-        Category category=mapper.map(categoryDto,Category.class);
+        Boolean exist=categoryRepo.existsByName(categoryDto.getName().trim());
+        if(exist){
+            throw new ExistDataException("Category name already exists");
+        }
+
+         Category category=mapper.map(categoryDto,Category.class);
           if(ObjectUtils.isEmpty(category.getId())){
               category.setIsDeleted(false);
               category.setCreatedOn(new Date());
