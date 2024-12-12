@@ -8,6 +8,7 @@ import com.pvt.enotes.repository.CategoryRepository;
 import com.pvt.enotes.service.CategoryService;
 
 
+import com.pvt.enotes.util.Validation;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,15 +28,16 @@ public class CategoryServiceImpl implements CategoryService {
     @Autowired
     private ModelMapper mapper;
 
+    @Autowired
+    Validation validation;
+
     @Override
     public Boolean saveCategory(CategoryDto categoryDto) {
 
+        //validation checking
+        validation.categoryValidation(categoryDto);
 
-//          Category category=new Category();
-//          category.setName(categoryDto.getName());
-//          category.setDescription(categoryDto.getDescription());
-//          category.setIsActive(categoryDto.getIsActive());
-          Category category=mapper.map(categoryDto,Category.class);
+        Category category=mapper.map(categoryDto,Category.class);
 
           if(ObjectUtils.isEmpty(category.getId())){
               category.setIsDeleted(false);
@@ -91,7 +93,7 @@ public class CategoryServiceImpl implements CategoryService {
         Category category = categoryRepo.findByIdAndIsDeletedFalse(id).orElseThrow(()->new ResourceNotFoundException("Category Not Found with id="+id));
 
         if(!ObjectUtils.isEmpty(category)){
-            category.getName().toUpperCase();
+
             return mapper.map(category,CategoryDto.class);
         }
         return null;
