@@ -5,6 +5,7 @@ import com.pvt.enotes.dto.CategoryResponse;
 import com.pvt.enotes.entity.Category;
 import com.pvt.enotes.exception.ResourceNotFoundException;
 import com.pvt.enotes.service.CategoryService;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

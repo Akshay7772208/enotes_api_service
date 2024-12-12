@@ -3,8 +3,11 @@ package com.pvt.enotes.exception;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+
 
 @Slf4j
 @ControllerAdvice
@@ -27,4 +30,18 @@ public class GlobalExceptionHandler {
         log.error("GlobalExceptionHandler :: handleResourceNotFoundException ::", e.getMessage());
         return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
     }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<?> handleMethodArgumentNotValidException(MethodArgumentNotValidException e){
+        log.error("GlobalExceptionHandler :: handleMethodArgumentNotValidException ::", e.getMessage());
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(ValidationException.class)
+    public ResponseEntity<?> handleValidationException(ValidationException e){
+        log.error("GlobalExceptionHandler :: handleValidationException ::", e.getMessage());
+        return new ResponseEntity<>(e.getErrors(), HttpStatus.BAD_REQUEST);
+    }
+
+
 }
