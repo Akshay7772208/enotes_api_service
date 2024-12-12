@@ -12,4 +12,9 @@ public class ProjectConfig {
     public ModelMapper mapper(){
         return new ModelMapper();
     }
+
+    @Bean
+    public AuditAwareConfig auditAware(){
+        return new AuditAwareConfig();
+    }
 }

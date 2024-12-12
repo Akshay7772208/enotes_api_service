@@ -2,6 +2,7 @@ package com.pvt.enotes.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.util.Date;
 
@@ -11,6 +12,7 @@ import java.util.Date;
 @NoArgsConstructor
 
 @Entity
+@EntityListeners(AuditingEntityListener.class)
 
 public class Category extends BaseModel {
 
@@ -22,5 +24,8 @@ public class Category extends BaseModel {
 
     private String description;
 
+    private Boolean isActive;
+
+    private Boolean isDeleted;
 
 }
