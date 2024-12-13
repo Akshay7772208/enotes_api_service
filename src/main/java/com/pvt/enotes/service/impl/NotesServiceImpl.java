@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pvt.enotes.dto.NotesDto;
 import com.pvt.enotes.dto.NotesDto.CategoryDto;
 
+import com.pvt.enotes.dto.NotesResponse;
 import com.pvt.enotes.entity.FileDetails;
 import com.pvt.enotes.entity.Notes;
 import com.pvt.enotes.exception.ResourceNotFoundException;
@@ -15,12 +16,17 @@ import org.apache.commons.io.FilenameUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StreamUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
-import java.io.IOException;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -51,6 +57,10 @@ public class NotesServiceImpl implements NotesService {
         ObjectMapper ob = new ObjectMapper();
         NotesDto notesDto =ob.readValue(notes,NotesDto.class);
 
+
+        if(!ObjectUtils.isEmpty(notesDto.getId())){
+            updateNotes(notesDto,file);
+        }
         //category validation
         checkCategoryExist(notesDto.getCategory());
 
@@ -60,15 +70,25 @@ public class NotesServiceImpl implements NotesService {
         if(!ObjectUtils.isEmpty(fileDtls)){
            notesMap.setFileDetails(fileDtls);
         }else{
-            notesMap.setFileDetails(null);
+            if(ObjectUtils.isEmpty(notesDto.getId())){
+                notesMap.setFileDetails(null);
+            }
         }
-
         Notes saveNotes=notesRepo.save(notesMap);
 
         if(!ObjectUtils.isEmpty(saveNotes)){
             return true;
         }
         return false;
+    }
+
+    private void updateNotes(NotesDto notesDto, MultipartFile file) throws Exception{
+
+        Notes existNotes=notesRepo.findById(notesDto.getId()).orElseThrow(()-> new ResourceNotFoundException("Invalid id found"));
+        if(ObjectUtils.isEmpty(file)){
+            notesDto.setFileDetails(mapper.map(existNotes.getFileDetails(), NotesDto.FilesDto.class));
+        }
+
     }
 
     private FileDetails saveFileDetails(MultipartFile file) throws Exception {
@@ -81,7 +101,6 @@ public class NotesServiceImpl implements NotesService {
             if(!extensionsAlowed.contains(extension)){
                 throw new IllegalArgumentException("Invalid file format");
             }
-            
 
             String rndString= UUID.randomUUID().toString();
 //            String extension=FilenameUtils.getExtension(originalFileName);
@@ -92,7 +111,6 @@ public class NotesServiceImpl implements NotesService {
                 saveFile.mkdir();
             }
             String storePath= uploadpath.concat(uploadFileName);
-
 
             long upload=Files.copy(file.getInputStream(), Paths.get(storePath));
             if(upload!=0){
@@ -133,4 +151,41 @@ public class NotesServiceImpl implements NotesService {
 
         return notesRepo.findAll().stream().map(note -> mapper.map(note,NotesDto.class)).toList();
     }
+
+    @Override
+    public byte[] downloadFile(FileDetails fileDetails) throws Exception {
+        InputStream io= new FileInputStream(fileDetails.getPath());
+
+        return StreamUtils.copyToByteArray(io);
+
+    }
+
+    @Override
+    public FileDetails getFileDetails(Integer id) throws Exception{
+        FileDetails fileDtls = filesRepo.findById(id).orElseThrow(()-> new ResourceNotFoundException("File not available"));
+        InputStream io= new FileInputStream(fileDtls.getPath());
+
+        return fileDtls;
+    }
+
+    @Override
+    public NotesResponse getAllNotesByUser(Integer userId,Integer pageNo,Integer pageSize) {
+        Pageable pageable = PageRequest.of(pageNo,pageSize);
+
+        Page<Notes> pageNotes=notesRepo.findByCreatedBy(userId,pageable);
+        List<NotesDto> notesDto=pageNotes.get().map(n->mapper.map(n,NotesDto.class)).toList();
+
+        NotesResponse notes= NotesResponse.builder().
+                        notes(notesDto).
+                        pageNo(pageNotes.getNumber()).
+                        pageSize(pageNotes.getSize()).
+                        totalElements(pageNotes.getTotalElements()).
+                        totalPages(pageNotes.getTotalPages()).
+                        isFirst(pageNotes.isFirst()).
+                        isLast(pageNotes.isLast()).
+                        build();
+        return notes;
+    }
+
+
 }

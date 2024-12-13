@@ -10,6 +10,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import java.io.FileNotFoundException;
+
 
 @Slf4j
 @ControllerAdvice
@@ -65,7 +67,17 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<?> handleHttpMessageNotReadableException(HttpMessageNotReadableException e){
         log.error("GlobalExceptionHandler :: handleHttpMessageNotReadableException ::", e.getMessage());
-        return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        //return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        return CommonUtil.createErrorResponseMessage(e.getMessage(), HttpStatus.BAD_REQUEST);
+
+    }
+
+    @ExceptionHandler(FileNotFoundException.class)
+    public ResponseEntity<?> handleFileNotFoundException(FileNotFoundException e){
+        log.error("GlobalExceptionHandler :: handleFileNotFoundException ::", e.getMessage());
+        //return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        return CommonUtil.createErrorResponseMessage(e.getMessage(), HttpStatus.NOT_FOUND);
+
     }
 
 }
