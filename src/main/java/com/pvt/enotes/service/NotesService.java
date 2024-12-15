@@ -1,6 +1,6 @@
 package com.pvt.enotes.service;
 
-import com.pvt.enotes.dto.CategoryDto;
+import com.pvt.enotes.dto.FavouriteNoteDto;
 import com.pvt.enotes.dto.NotesDto;
 import com.pvt.enotes.dto.NotesResponse;
 import com.pvt.enotes.entity.FileDetails;
@@ -19,4 +19,22 @@ public interface NotesService {
     public FileDetails getFileDetails(Integer id) throws Exception;
 
     public NotesResponse getAllNotesByUser(Integer userId,Integer pageNo,Integer pageSize);
+
+    public void softDeleteNotes(Integer id) throws Exception;
+
+    public void restoreNotes(Integer id) throws Exception;
+
+    public List<NotesDto> getUserRecycleBinNotes(Integer userId) throws Exception;
+
+    void hardDeleteNotes(Integer id) throws Exception;
+
+    void emptyRecycleBin(Integer userId) throws Exception;
+
+    public void favouriteNotes(Integer noteId) throws Exception;
+
+    public void unFavouriteNotes(Integer noteId) throws Exception;
+
+    public List<FavouriteNoteDto> getUserFavouriteNotes() throws Exception;
+
+    public Boolean copyNotes(Integer id) throws Exception;
 }

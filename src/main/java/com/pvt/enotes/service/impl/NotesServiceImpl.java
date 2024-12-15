@@ -1,14 +1,17 @@
 package com.pvt.enotes.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pvt.enotes.dto.FavouriteNoteDto;
 import com.pvt.enotes.dto.NotesDto;
 import com.pvt.enotes.dto.NotesDto.CategoryDto;
 
 import com.pvt.enotes.dto.NotesResponse;
+import com.pvt.enotes.entity.FavouriteNote;
 import com.pvt.enotes.entity.FileDetails;
 import com.pvt.enotes.entity.Notes;
 import com.pvt.enotes.exception.ResourceNotFoundException;
 import com.pvt.enotes.repository.CategoryRepository;
+import com.pvt.enotes.repository.FavouriteNoteRepository;
 import com.pvt.enotes.repository.FileRepository;
 import com.pvt.enotes.repository.NotesRepository;
 import com.pvt.enotes.service.NotesService;
@@ -20,6 +23,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StreamUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -29,6 +33,7 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -46,6 +51,9 @@ public class NotesServiceImpl implements NotesService {
     private FileRepository filesRepo;
 
     @Autowired
+    private FavouriteNoteRepository favouriteNoteRepo;
+
+    @Autowired
     private ModelMapper mapper;
 
     @Value("${file.upload.path}")
@@ -56,7 +64,8 @@ public class NotesServiceImpl implements NotesService {
 
         ObjectMapper ob = new ObjectMapper();
         NotesDto notesDto =ob.readValue(notes,NotesDto.class);
-
+        notesDto.setIsDeleted(false);
+        notesDto.setDeletedOn(null);
 
         if(!ObjectUtils.isEmpty(notesDto.getId())){
             updateNotes(notesDto,file);
@@ -172,7 +181,7 @@ public class NotesServiceImpl implements NotesService {
     public NotesResponse getAllNotesByUser(Integer userId,Integer pageNo,Integer pageSize) {
         Pageable pageable = PageRequest.of(pageNo,pageSize);
 
-        Page<Notes> pageNotes=notesRepo.findByCreatedBy(userId,pageable);
+        Page<Notes> pageNotes=notesRepo.findByCreatedByAndIsDeletedFalse(userId,pageable);
         List<NotesDto> notesDto=pageNotes.get().map(n->mapper.map(n,NotesDto.class)).toList();
 
         NotesResponse notes= NotesResponse.builder().
@@ -185,6 +194,90 @@ public class NotesServiceImpl implements NotesService {
                         isLast(pageNotes.isLast()).
                         build();
         return notes;
+    }
+
+    @Override
+    public void softDeleteNotes(Integer id) throws Exception{
+        Notes notes=notesRepo.findById(id).orElseThrow(()-> new ResourceNotFoundException("id invalid"));
+        notes.setIsDeleted(true);
+        notes.setDeletedOn(LocalDateTime.now());
+        notesRepo.save(notes);
+    }
+
+    @Override
+    public void restoreNotes(Integer id) throws Exception{
+        Notes notes=notesRepo.findById(id).orElseThrow(()-> new ResourceNotFoundException("id invalid"));
+        notes.setIsDeleted(false);
+        notes.setDeletedOn(null);
+        notesRepo.save(notes);
+    }
+
+    @Override
+    public List<NotesDto> getUserRecycleBinNotes(Integer userId) throws Exception {
+        List<Notes> recycleNotes=notesRepo.findByCreatedByAndIsDeletedTrue(userId);
+        List<NotesDto> notesDtoList=recycleNotes.stream().map(note-> mapper.map(note,NotesDto.class)).toList();
+        return notesDtoList;
+    }
+
+    @Override
+    public void hardDeleteNotes(Integer id) throws Exception{
+        Notes notes=notesRepo.findById(id).orElseThrow(()-> new ResourceNotFoundException("Notes not found"));
+        if(notes.getIsDeleted()){
+            notesRepo.delete(notes);
+        }else{
+            throw new IllegalArgumentException("Sorry you can't hard delete");
+        }
+
+    }
+
+    @Override
+    public void emptyRecycleBin(Integer userId) throws Exception {
+        List<Notes> recycleNotes=notesRepo.findByCreatedByAndIsDeletedTrue(userId);
+        if(!CollectionUtils.isEmpty(recycleNotes)){
+            notesRepo.deleteAll(recycleNotes);
+        }
+    }
+
+    @Override
+    public void favouriteNotes(Integer noteId) throws Exception{
+        int userId=1;
+        Notes notes=notesRepo.findById(noteId).orElseThrow(()-> new ResourceNotFoundException("Notes not found & Id invalid"));
+        FavouriteNote favouriteNote= FavouriteNote.builder().
+                note(notes).
+                userId(userId).
+                build();
+        favouriteNoteRepo.save(favouriteNote);
+    }
+
+    @Override
+    public void unFavouriteNotes(Integer favoriteNoteId) throws Exception{
+        FavouriteNote notes=favouriteNoteRepo.findById(favoriteNoteId).orElseThrow(()-> new ResourceNotFoundException("Favourite Notes not found & Id invalid"));
+        favouriteNoteRepo.delete(notes);
+    }
+
+    @Override
+    public List<FavouriteNoteDto> getUserFavouriteNotes() {
+        Integer userId=1;
+        List<FavouriteNote> favouriteNotes=favouriteNoteRepo.findByUserId(userId);
+        return favouriteNotes.stream().map(fn-> mapper.map(fn,FavouriteNoteDto.class)).toList();
+
+    }
+
+    @Override
+    public Boolean copyNotes(Integer id) throws Exception{
+        Notes notes=notesRepo.findById(id).orElseThrow(()-> new ResourceNotFoundException("id invalid"));
+        Notes copyNotes= notes.builder().
+                title(notes.getTitle()).
+                description(notes.getDescription()).
+                category(notes.getCategory()).
+                isDeleted(false).
+                fileDetails(null).
+                build();
+        Notes saveCopyNote=notesRepo.save(copyNotes);
+        if(!ObjectUtils.isEmpty(saveCopyNote)){
+            return true;
+        }
+        return false;
     }
 
 
