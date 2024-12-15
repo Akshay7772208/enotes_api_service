@@ -4,10 +4,6 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.Date;
-
 @Entity
 @EntityListeners(AuditingEntityListener.class)
 
@@ -16,8 +12,7 @@ import java.util.Date;
 @Getter
 @Setter
 @Builder
-
-public class Notes extends BaseModel{
+public class Todo extends BaseModel{
 
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
@@ -25,16 +20,6 @@ public class Notes extends BaseModel{
 
     private String title;
 
-    private String description;
-
-    @ManyToOne
-    private Category category;
-
-    @ManyToOne
-    private FileDetails fileDetails;
-
-    private Boolean isDeleted;
-
-    private LocalDateTime deletedOn;
-
+    @Column(name="status")
+    private Integer statusId;
 }

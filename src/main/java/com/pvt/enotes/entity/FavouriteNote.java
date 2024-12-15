@@ -4,10 +4,6 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.Date;
-
 @Entity
 @EntityListeners(AuditingEntityListener.class)
 
@@ -17,24 +13,15 @@ import java.util.Date;
 @Setter
 @Builder
 
-public class Notes extends BaseModel{
+public class FavouriteNote {
 
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Integer id;
 
-    private String title;
-
-    private String description;
-
     @ManyToOne
-    private Category category;
+    private Notes note;
 
-    @ManyToOne
-    private FileDetails fileDetails;
-
-    private Boolean isDeleted;
-
-    private LocalDateTime deletedOn;
+    private Integer userId;
 
 }
