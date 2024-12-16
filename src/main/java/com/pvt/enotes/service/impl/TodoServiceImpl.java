@@ -34,6 +34,7 @@ public class TodoServiceImpl implements TodoService {
         validation.todoValidation(todoDto);
 
         Todo todo=mapper.map(todoDto, Todo.class);
+        //System.out.println(todo.getStatusId());
         todo.setStatusId(todoDto.getStatus().getId());
         Todo saveTodo= todoRepo.save(todo);
         if(!ObjectUtils.isEmpty(saveTodo)){
@@ -50,7 +51,7 @@ public class TodoServiceImpl implements TodoService {
         return todoDto;
     }
 
-    private void setStatus(TodoDto todoDto, Todo todo) {
+    public void setStatus(TodoDto todoDto, Todo todo) {
         for(TodoStatus st: TodoStatus.values()){
             if(st.getId().equals(todo.getStatusId())){
                 StatusDto statusDto= StatusDto.builder().
