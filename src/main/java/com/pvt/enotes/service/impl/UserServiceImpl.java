@@ -10,6 +10,7 @@ import com.pvt.enotes.entity.Role;
 import com.pvt.enotes.entity.User;
 import com.pvt.enotes.repository.RoleRepository;
 import com.pvt.enotes.repository.UserRepository;
+import com.pvt.enotes.service.JwtService;
 import com.pvt.enotes.service.UserService;
 import com.pvt.enotes.service.EmailService;
 import com.pvt.enotes.util.Validation;
@@ -50,6 +51,9 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
 
+    @Autowired
+    private JwtService jwtService;
+
     @Override
     public Boolean register(UserDto userDto, String url) throws Exception{
         validation.userValidation(userDto);
@@ -76,7 +80,7 @@ public class UserServiceImpl implements UserService {
         if(authenticate.isAuthenticated()){
             CustomUserDetails costumUserDetails = (CustomUserDetails) authenticate.getPrincipal();
 
-            String token="akshaygetsgs";
+            String token= jwtService.generateToken(costumUserDetails.getUser());
 
             LoginResponse loginResponse= LoginResponse.builder().
                     user(mapper.map(costumUserDetails.getUser(),UserDto.class)).
