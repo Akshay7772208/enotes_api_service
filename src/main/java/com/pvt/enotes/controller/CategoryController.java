@@ -1,20 +1,16 @@
 package com.pvt.enotes.controller;
-
 import com.pvt.enotes.dto.CategoryDto;
 import com.pvt.enotes.dto.CategoryResponse;
-import com.pvt.enotes.entity.Category;
-import com.pvt.enotes.exception.ResourceNotFoundException;
 import com.pvt.enotes.service.CategoryService;
 import com.pvt.enotes.util.CommonUtil;
-import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @Slf4j
@@ -26,6 +22,7 @@ public class CategoryController {
     private CategoryService categoryService;
 
     @PostMapping("/save")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> saveCategory(@RequestBody CategoryDto categoryDto){
        Boolean saveCategory= categoryService.saveCategory(categoryDto);
 
@@ -39,6 +36,7 @@ public class CategoryController {
     }
 
     @GetMapping("/")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> getAllCategory(){
 
          List<CategoryDto> allCategory=categoryService.getAllCategory();
@@ -53,6 +51,7 @@ public class CategoryController {
     }
 
     @GetMapping("/active")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public ResponseEntity<?> getActiveCategory(){
         List<CategoryResponse> activeCategory=categoryService.getActiveCategory();
 
@@ -65,6 +64,7 @@ public class CategoryController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> getCategoryDetailsById(@PathVariable Integer id) throws Exception{
 
             CategoryDto categoryDto=categoryService.getCategoryById(id);
@@ -79,6 +79,7 @@ public class CategoryController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> deleteCategoryById(@PathVariable Integer id){
         Boolean deleted=categoryService.deleteCategory(id);
         if(deleted){
