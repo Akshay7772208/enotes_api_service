@@ -1,6 +1,5 @@
 package com.pvt.enotes.controller;
 
-import com.pvt.enotes.dto.CategoryDto;
 import com.pvt.enotes.dto.FavouriteNoteDto;
 import com.pvt.enotes.dto.NotesDto;
 import com.pvt.enotes.dto.NotesResponse;
@@ -69,9 +68,7 @@ public class NotesController {
                                                  @RequestParam (name="pageSize",defaultValue="10") Integer pageSize){
 
         NotesResponse notes=notesService.getAllNotesByUser(pageNo,pageSize);
-//        if(CollectionUtils.isEmpty(notes)){
-//            return  ResponseEntity.noContent().build();
-//        }
+
         return CommonUtil.createBuilderResponse(notes,HttpStatus.OK);
     }
 

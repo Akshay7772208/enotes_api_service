@@ -3,7 +3,7 @@ package com.pvt.enotes.controller;
 import com.pvt.enotes.dto.LoginRequest;
 import com.pvt.enotes.dto.LoginResponse;
 import com.pvt.enotes.dto.UserRequest;
-import com.pvt.enotes.service.UserService;
+import com.pvt.enotes.service.AuthService;
 import com.pvt.enotes.util.CommonUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,12 +20,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     @Autowired
-    private UserService userService;
+    private AuthService authService;
 
     @PostMapping("/")
     public ResponseEntity<?> register(@RequestBody UserRequest userRequest, HttpServletRequest request) throws Exception {
         String url=CommonUtil.getUrl(request);
-        Boolean register= userService.register(userRequest,url);
+        Boolean register= authService.register(userRequest,url);
 
         if(register){
             return CommonUtil.createBuilderResponseMessage("Register success", HttpStatus.CREATED);
@@ -35,7 +35,7 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) throws Exception {
-        LoginResponse loginResponse=userService.login(loginRequest);
+        LoginResponse loginResponse= authService.login(loginRequest);
         if(ObjectUtils.isEmpty(loginResponse)){
             return CommonUtil.createErrorResponseMessage("Invalid credentials",HttpStatus.BAD_REQUEST);
         }
