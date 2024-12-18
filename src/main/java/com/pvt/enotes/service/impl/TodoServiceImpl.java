@@ -9,6 +9,7 @@ import com.pvt.enotes.enums.TodoStatus;
 import com.pvt.enotes.exception.ResourceNotFoundException;
 import com.pvt.enotes.repository.TodoRepository;
 import com.pvt.enotes.service.TodoService;
+import com.pvt.enotes.util.CommonUtil;
 import com.pvt.enotes.util.Validation;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,7 +67,8 @@ public class TodoServiceImpl implements TodoService {
 
     @Override
     public List<TodoDto> getTodoByUser() {
-        Integer userId=1;
+        Integer userId= CommonUtil.getLoggedInUser().getId();
+
         List<Todo> todos=todoRepo.findByCreatedBy(userId);
         return todos.stream().map(td-> mapper.map(td,TodoDto.class)).toList();
     }

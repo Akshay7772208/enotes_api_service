@@ -1,10 +1,14 @@
 package com.pvt.enotes.util;
 
+import com.pvt.enotes.config.security.CustomUserDetails;
+import com.pvt.enotes.dto.UserResponse;
+import com.pvt.enotes.entity.User;
 import com.pvt.enotes.handler.GenericResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 public class CommonUtil {
 
@@ -75,4 +79,15 @@ public class CommonUtil {
         apiUrl=apiUrl.replace(request.getServletPath(),""); // http:localhost:8080
         return apiUrl;
     }
+
+    public static User getLoggedInUser(){
+        try{
+            CustomUserDetails logUser = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            return logUser.getUser();
+        }catch(Exception e){
+            throw e;
+        }
+    }
+
+
 }

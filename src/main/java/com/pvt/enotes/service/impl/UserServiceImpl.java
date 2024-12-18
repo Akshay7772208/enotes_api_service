@@ -4,7 +4,7 @@ import com.pvt.enotes.config.security.CustomUserDetails;
 import com.pvt.enotes.dto.EmailRequest;
 import com.pvt.enotes.dto.LoginRequest;
 import com.pvt.enotes.dto.LoginResponse;
-import com.pvt.enotes.dto.UserDto;
+import com.pvt.enotes.dto.UserRequest;
 import com.pvt.enotes.entity.AccountStatus;
 import com.pvt.enotes.entity.Role;
 import com.pvt.enotes.entity.User;
@@ -55,10 +55,10 @@ public class UserServiceImpl implements UserService {
     private JwtService jwtService;
 
     @Override
-    public Boolean register(UserDto userDto, String url) throws Exception{
-        validation.userValidation(userDto);
-        User user = mapper.map(userDto, User.class);
-        setRole(userDto,user);
+    public Boolean register(UserRequest userRequest, String url) throws Exception{
+        validation.userValidation(userRequest);
+        User user = mapper.map(userRequest, User.class);
+        setRole(userRequest,user);
         AccountStatus status= AccountStatus.builder().
                 isActive(false).
                 verificationCode(UUID.randomUUID().toString()).
@@ -83,7 +83,7 @@ public class UserServiceImpl implements UserService {
             String token= jwtService.generateToken(costumUserDetails.getUser());
 
             LoginResponse loginResponse= LoginResponse.builder().
-                    user(mapper.map(costumUserDetails.getUser(),UserDto.class)).
+                    user(mapper.map(costumUserDetails.getUser(), UserRequest.class)).
                     token(token).
                     build();
             return loginResponse;
@@ -111,8 +111,8 @@ public class UserServiceImpl implements UserService {
         emailService.sendEmail(emailRequest);
     }
 
-    private void setRole(UserDto userDto,User user) {
-        List<Integer> reqRoleId = userDto.getRoles().stream().map(r -> r.getId()).toList();
+    private void setRole(UserRequest userRequest, User user) {
+        List<Integer> reqRoleId = userRequest.getRoles().stream().map(r -> r.getId()).toList();
         List<Role> roles = roleRepo.findAllById(reqRoleId);
         user.setRoles(roles);
     }
